@@ -1,39 +1,63 @@
-(deftemplate person
-    (slot ID        (type INTEGER)      (default ?NONE))
-    (slot HBsAg     (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
-    (slot anti_HDV  (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
-    (slot anti_HBs  (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
-    (slot anti_HBc  (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
-    (slot IgM_anti_HBc (type SYMBOL) (default NONE) (allowed-symbols NONE pos neg))
-    (slot result    (type SYMBOL)   (default NONE))
+;;;======================================================
+;;;   Tugas Besar 2 IF3170
+;;;   Prediksi Penyakit Hepatitis Menggunakan CLIPS
+;;;======================================================
+
+;;;*****************************
+;;;* VALIDATION INPUT FUNCTION *
+;;;*****************************
+
+(deffunction ask_question (?question)
+   (bind $?allowed (create$ pos neg))
+   (printout t ?question)
+   (bind ?answer (read))
+   (if (lexemep ?answer) 
+         then (bind ?answer (lowcase ?answer)))
+   (while (not (member$ ?answer ?allowed)) do
+      (printout t ?question)
+      (bind ?answer (read)))
+      (if (lexemep ?answer) 
+         then (bind ?answer (lowcase ?answer)))
+   ?answer)
+
+(deffunction get_value (?question)
+   (bind ?response (ask_question ?question))
+   ?response)
+
+;;;************************
+;;;* TEMPLATE FOR PATIENT *
+;;;************************
+
+(deftemplate patient
+    (slot ID            (type INTEGER)  (default ?NONE))
+    (slot HBsAg         (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
+    (slot anti_HDV      (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
+    (slot anti_HBs      (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
+    (slot anti_HBc      (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
+    (slot IgM_anti_HBc  (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
+    (slot result        (type SYMBOL)   (default NONE))
 )
 
 (deffacts insert-facts
-    (person (ID 0))
+    (patient (ID 0))
 )
 
-; (defrule initial-rule
-;     ?r <- (result ~NONE)
-;     =>
-;     (retract ?r)
-;     (modify ?p (result NONE))
-; )
+;;;************************************
+;;;* PATIENT CONDITION CHECKING RULES *
+;;;************************************
 
 ; ROOT
 (defrule HBsAg_check
-    ?p <- (person (ID ?ID) (HBsAg NONE))
+    ?p <- (patient (ID ?ID) (HBsAg NONE))
     =>
-    (printout t "HBsAg? ")
-    (bind ?HBsAg (read))
-    (modify ?p (HBsAg ?HBsAg))
+    (modify ?p (HBsAg (get_value "HBsAg? ")))
 )
 
-; BAGIAN KIRI
+; LEFT SIDE
 (defrule anti_HDV_check
-    ?p <- (person (ID ?ID) (result NONE) (HBsAg pos) (anti_HDV NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (HBsAg pos) (anti_HDV NONE))
     =>
-    (printout t "anti-HDV? ")
-    (bind ?anti_HDV (read))
+    (bind ?anti_HDV (get_value "anti-HDV? "))
     (modify ?p (anti_HDV ?anti_HDV))
     
     (if (eq ?anti_HDV pos) then
@@ -42,10 +66,9 @@
 )
 
 (defrule anti_HBc_check_1
-    ?p <- (person (ID ?ID) (result NONE) (anti_HDV neg) (anti_HBc NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (anti_HDV neg) (anti_HBc NONE))
     =>
-    (printout t "anti-HBc? ")
-    (bind ?anti_HBc (read))
+    (bind ?anti_HBc (get_value "anti-HBc? "))
     (modify ?p (anti_HBc ?anti_HBc))
 
     (if (eq ?anti_HBc neg) then
@@ -54,11 +77,9 @@
 )
 
 (defrule anti_HBs_check_1
-    ?p <- (person (ID ?ID) (result NONE) (anti_HDV neg) (anti_HBc pos) (anti_HBs NONE))
-    ?check <- (anti_HBs NONE)
+    ?p <- (patient (ID ?ID) (result NONE) (anti_HDV neg) (anti_HBc pos) (anti_HBs NONE))
     =>
-    (printout t "anti-HBs? ")
-    (bind ?anti_HBs (read))
+    (bind ?anti_HBs (get_value "anti-HBs? "))
     (modify ?p (anti_HBs ?anti_HBs))
 
     (if (eq ?anti_HBs pos) then
@@ -67,10 +88,9 @@
 )
 
 (defrule IgM_anti_HBc_check
-    ?p <- (person (ID ?ID) (result NONE) (anti_HDV neg) (anti_HBs neg) (IgM_anti_HBc NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (anti_HDV neg) (anti_HBs neg) (IgM_anti_HBc NONE))
     =>
-    (printout t "IgM anti-HBc? ")
-    (bind ?IgM_anti_HBc (read))
+    (bind ?IgM_anti_HBc (get_value "IgM anti-HBc? "))
     (modify ?p (IgM_anti_HBc ?IgM_anti_HBc))
 
     (if (eq ?IgM_anti_HBc pos) then
@@ -81,21 +101,19 @@
     )
 )
 
-; BAGIAN KANAN
+; RIGHT SIDE
 
 (defrule anti_HBs_check_2
-    ?p <- (person (ID ?ID) (result NONE) (HBsAg neg) (anti_HBs NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (HBsAg neg) (anti_HBs NONE))
     =>
-    (printout t "anti-HBs? ")
-    (bind ?anti_HBs (read))
+    (bind ?anti_HBs (get_value "anti-HBs? "))
     (modify ?p (anti_HBs ?anti_HBs))
 )
 
 (defrule anti_HBc_check_2
-    ?p <- (person (ID ?ID) (result NONE) (HBsAg neg) (anti_HBs pos) (anti_HBc NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (HBsAg neg) (anti_HBs pos) (anti_HBc NONE))
     =>
-    (printout t "anti-HBc? ")
-    (bind ?anti_HBc (read))
+    (bind ?anti_HBc (get_value "anti-HBc? "))
     (modify ?p (anti_HBc ?anti_HBc))
 
     (if (eq ?anti_HBc pos) then
@@ -107,10 +125,9 @@
 )
 
 (defrule anti_HBc_check_3
-    ?p <- (person (ID ?ID) (result NONE) (HBsAg neg) (anti_HBs neg) (anti_HBc NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (HBsAg neg) (anti_HBs neg) (anti_HBc NONE))
     =>
-    (printout t "anti-HBc? ")
-    (bind ?anti_HBc (read))
+    (bind ?anti_HBc (get_value "anti-HBc? "))
     (modify ?p (anti_HBc ?anti_HBc))
 
     (if (eq ?anti_HBc pos) then
@@ -121,9 +138,19 @@
     )
 )
 
+;;;********************************
+;;;* STARTUP AND CONCLUSION RULES *
+;;;********************************
+
+(defrule system-banner 
+    (declare (salience 10))
+    =>
+    (printout t "=====================================================" crlf)
+    (printout t "+   Prediksi Penyakit Hepatitis Menggunakan CLIPS   +" crlf)
+    (printout t "=====================================================" crlf))
 
 (defrule printResult
-    (person (result ?r))
+    (patient (ID ?id) (result ?r))
     (not (eq ?r NONE))
     =>
     (if (eq ?r hepatitis_BD)            then (bind ?p "Hepatitis B+D"))
@@ -134,5 +161,5 @@
     (if (eq ?r Vaccinated) then (bind ?p "Vaccinated"))
     (if (eq ?r Unclear) then (bind ?p "Unclear (possible resolved)"))
     (if (eq ?r Healthy) then (bind ?p "Healthy not vaccinated or suspicious"))
-    (printout t "Hasil Prediksi = " ?p crlf)
+    (printout t "Hasil Prediksi Pasien ke-" ?id " = " ?p crlf)
 )
