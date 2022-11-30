@@ -48,6 +48,7 @@
 
 ; ROOT
 (defrule HBsAg_check
+    ; (system-banner)
     ?p <- (patient (ID ?ID) (HBsAg NONE))
     =>
     (modify ?p (HBsAg (get_value "HBsAg? ")))
@@ -161,5 +162,5 @@
     (if (eq ?r Vaccinated) then (bind ?p "Vaccinated"))
     (if (eq ?r Unclear) then (bind ?p "Unclear (possible resolved)"))
     (if (eq ?r Healthy) then (bind ?p "Healthy not vaccinated or suspicious"))
-    (printout t "Hasil Prediksi Pasien ke-" ?id " = " ?p crlf)
+    (printout t "Hasil Prediksi Pasien = " ?p crlf)
 )
