@@ -160,7 +160,7 @@
     (if (eq ?r Chronic_infection)       then (bind ?p "Chronic infection"))
     (if (eq ?r Cured) then (bind ?p "Cured"))
     (if (eq ?r Vaccinated) then (bind ?p "Vaccinated"))
-    (if (eq ?r Unclear) then (bind ?p "Unclear (positivesible resolved)"))
+    (if (eq ?r Unclear) then (bind ?p "Unclear (possible resolved)"))
     (if (eq ?r Healthy) then (bind ?p "Healthy not vaccinated or suspicious"))
     (printout t "Hasil Prediksi Pasien = " ?p crlf)
 )
