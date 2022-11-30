@@ -8,7 +8,7 @@
 ;;;*****************************
 
 (deffunction ask_question (?question)
-   (bind $?allowed (create$ pos neg))
+   (bind $?allowed (create$ positive negative))
    (printout t ?question)
    (bind ?answer (read))
    (if (lexemep ?answer) 
@@ -30,11 +30,11 @@
 
 (deftemplate patient
     (slot ID            (type INTEGER)  (default ?NONE))
-    (slot HBsAg         (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
-    (slot anti_HDV      (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
-    (slot anti_HBs      (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
-    (slot anti_HBc      (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
-    (slot IgM_anti_HBc  (type SYMBOL)   (default NONE) (allowed-symbols NONE pos neg))
+    (slot HBsAg         (type SYMBOL)   (default NONE) (allowed-symbols NONE positive negative))
+    (slot anti_HDV      (type SYMBOL)   (default NONE) (allowed-symbols NONE positive negative))
+    (slot anti_HBs      (type SYMBOL)   (default NONE) (allowed-symbols NONE positive negative))
+    (slot anti_HBc      (type SYMBOL)   (default NONE) (allowed-symbols NONE positive negative))
+    (slot IgM_anti_HBc  (type SYMBOL)   (default NONE) (allowed-symbols NONE positive negative))
     (slot result        (type SYMBOL)   (default NONE))
 )
 
@@ -56,48 +56,48 @@
 
 ; LEFT SIDE
 (defrule anti_HDV_check
-    ?p <- (patient (ID ?ID) (result NONE) (HBsAg pos) (anti_HDV NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (HBsAg positive) (anti_HDV NONE))
     =>
     (bind ?anti_HDV (get_value "anti-HDV? "))
     (modify ?p (anti_HDV ?anti_HDV))
     
-    (if (eq ?anti_HDV pos) then
+    (if (eq ?anti_HDV positive) then
         (modify ?p (result hepatitis_BD))
     )
 )
 
 (defrule anti_HBc_check_1
-    ?p <- (patient (ID ?ID) (result NONE) (anti_HDV neg) (anti_HBc NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (anti_HDV negative) (anti_HBc NONE))
     =>
     (bind ?anti_HBc (get_value "anti-HBc? "))
     (modify ?p (anti_HBc ?anti_HBc))
 
-    (if (eq ?anti_HBc neg) then
+    (if (eq ?anti_HBc negative) then
         (modify ?p (result Uncertain_configuration))
     )
 )
 
 (defrule anti_HBs_check_1
-    ?p <- (patient (ID ?ID) (result NONE) (anti_HDV neg) (anti_HBc pos) (anti_HBs NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (anti_HDV negative) (anti_HBc positive) (anti_HBs NONE))
     =>
     (bind ?anti_HBs (get_value "anti-HBs? "))
     (modify ?p (anti_HBs ?anti_HBs))
 
-    (if (eq ?anti_HBs pos) then
+    (if (eq ?anti_HBs positive) then
         (modify ?p (result Uncertain_configuration))
     )
 )
 
 (defrule IgM_anti_HBc_check
-    ?p <- (patient (ID ?ID) (result NONE) (anti_HDV neg) (anti_HBs neg) (IgM_anti_HBc NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (anti_HDV negative) (anti_HBs negative) (IgM_anti_HBc NONE))
     =>
     (bind ?IgM_anti_HBc (get_value "IgM anti-HBc? "))
     (modify ?p (IgM_anti_HBc ?IgM_anti_HBc))
 
-    (if (eq ?IgM_anti_HBc pos) then
+    (if (eq ?IgM_anti_HBc positive) then
         (modify ?p (result Acute_infection))
     )
-    (if (eq ?IgM_anti_HBc neg) then
+    (if (eq ?IgM_anti_HBc negative) then
         (modify ?p (result Chronic_infection))
     )
 )
@@ -105,36 +105,36 @@
 ; RIGHT SIDE
 
 (defrule anti_HBs_check_2
-    ?p <- (patient (ID ?ID) (result NONE) (HBsAg neg) (anti_HBs NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (HBsAg negative) (anti_HBs NONE))
     =>
     (bind ?anti_HBs (get_value "anti-HBs? "))
     (modify ?p (anti_HBs ?anti_HBs))
 )
 
 (defrule anti_HBc_check_2
-    ?p <- (patient (ID ?ID) (result NONE) (HBsAg neg) (anti_HBs pos) (anti_HBc NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (HBsAg negative) (anti_HBs positive) (anti_HBc NONE))
     =>
     (bind ?anti_HBc (get_value "anti-HBc? "))
     (modify ?p (anti_HBc ?anti_HBc))
 
-    (if (eq ?anti_HBc pos) then
+    (if (eq ?anti_HBc positive) then
         (modify ?p (result Cured))
     )
-    (if (eq ?anti_HBc neg) then
+    (if (eq ?anti_HBc negative) then
         (modify ?p (result Vaccinated))
     )
 )
 
 (defrule anti_HBc_check_3
-    ?p <- (patient (ID ?ID) (result NONE) (HBsAg neg) (anti_HBs neg) (anti_HBc NONE))
+    ?p <- (patient (ID ?ID) (result NONE) (HBsAg negative) (anti_HBs negative) (anti_HBc NONE))
     =>
     (bind ?anti_HBc (get_value "anti-HBc? "))
     (modify ?p (anti_HBc ?anti_HBc))
 
-    (if (eq ?anti_HBc pos) then
+    (if (eq ?anti_HBc positive) then
         (modify ?p (result Unclear))
     )
-    (if (eq ?anti_HBc neg) then
+    (if (eq ?anti_HBc negative) then
         (modify ?p (result Healthy))
     )
 )
@@ -160,7 +160,7 @@
     (if (eq ?r Chronic_infection)       then (bind ?p "Chronic infection"))
     (if (eq ?r Cured) then (bind ?p "Cured"))
     (if (eq ?r Vaccinated) then (bind ?p "Vaccinated"))
-    (if (eq ?r Unclear) then (bind ?p "Unclear (possible resolved)"))
+    (if (eq ?r Unclear) then (bind ?p "Unclear (positivesible resolved)"))
     (if (eq ?r Healthy) then (bind ?p "Healthy not vaccinated or suspicious"))
     (printout t "Hasil Prediksi Pasien = " ?p crlf)
 )
